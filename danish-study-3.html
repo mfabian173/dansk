@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dansk 🇩🇰 — Survival Study App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --bg-secondary: #f5f5f3;
+    --bg-danger: #fcebeb;
+    --text: #1a1a1a;
+    --text-secondary: #6b6b6b;
+    --text-tertiary: #999;
+    --border: rgba(0,0,0,0.12);
+    --border-secondary: rgba(0,0,0,0.22);
+    --border-primary: rgba(0,0,0,0.35);
+    --border-danger: #f09595;
+    --text-danger: #a32d2d;
+    --radius: 8px;
+    --radius-lg: 12px;
+    --green-light: #C0DD97;
+    --green-dark: #27500A;
+    --green-mid: #97C459;
+    --green-fill: #EAF3DE;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1c;
+      --bg-secondary: #262626;
+      --bg-danger: #3a1f1f;
+      --text: #f0f0f0;
+      --text-secondary: #aaa;
+      --text-tertiary: #777;
+      --border: rgba(255,255,255,0.12);
+      --border-secondary: rgba(255,255,255,0.2);
+      --border-primary: rgba(255,255,255,0.35);
+      --border-danger: #a32d2d;
+      --text-danger: #f09595;
+      --green-light: #27500A;
+      --green-dark: #C0DD97;
+      --green-mid: #3B6D11;
+      --green-fill: #17340A;
+    }
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  #app {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 1rem 1rem 3rem;
+  }
+
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 0 1.25rem;
+    border-bottom: 0.5px solid var(--border);
+    margin-bottom: 1.25rem;
+  }
+
+  .logo { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--text); }
+
+  .science-tip {
+    font-size: 12px; color: var(--text-tertiary);
+    background: var(--bg-secondary);
+    padding: 3px 10px; border-radius: 20px;
+  }
+
+  .tabs {
+    display: flex; gap: 6px; margin-bottom: 1.25rem;
+    overflow-x: auto; padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+
+  .tab {
+    padding: 6px 14px; border-radius: 20px;
+    border: 0.5px solid var(--border-secondary);
+    background: transparent; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 500;
+    color: var(--text-secondary);
+    white-space: nowrap; transition: all 0.15s;
+  }
+
+  .tab.active {
+    background: var(--green-light);
+    color: var(--green-dark);
+    border-color: var(--green-mid);
+  }
+
+  .mode-bar {
+    display: flex; gap: 8px; margin-bottom: 1.25rem; align-items: center;
+  }
+
+  .mode-btn {
+    padding: 5px 12px; border-radius: var(--radius);
+    border: 0.5px solid var(--border-secondary);
+    background: transparent; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 12px;
+    color: var(--text-secondary); transition: all 0.15s;
+  }
+
+  .mode-btn.active {
+    background: var(--bg-secondary);
+    color: var(--text);
+    border-color: var(--border-primary);
+  }
+
+  .progress-bar-wrap {
+    flex: 1; height: 5px;
+    background: var(--bg-secondary);
+    border-radius: 3px; overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%; background: #639922;
+    border-radius: 3px; transition: width 0.3s;
+  }
+
+  .score-badge {
+    font-size: 12px; font-weight: 500;
+    color: var(--green-dark); background: var(--green-light);
+    padding: 3px 10px; border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  /* FLASHCARD */
+  .card-wrap { perspective: 1000px; margin-bottom: 1rem; cursor: pointer; }
+
+  .card-inner {
+    position: relative; width: 100%; min-height: 200px;
+    transform-style: preserve-3d;
+    transition: transform 0.45s cubic-bezier(.4,0,.2,1);
+  }
+
+  .card-inner.flipped { transform: rotateY(180deg); }
+
+  .card-face {
+    position: absolute; top: 0; left: 0; width: 100%;
+    min-height: 200px;
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 2rem 1.5rem;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .card-back {
+    transform: rotateY(180deg);
+    background: var(--bg-secondary);
+  }
+
+  .card-category {
+    font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-tertiary); margin-bottom: 0.75rem;
+  }
+
+  .card-danish {
+    font-family: 'DM Serif Display', serif;
+    font-size: 36px; color: var(--text);
+    text-align: center; margin-bottom: 0.5rem;
+    line-height: 1.2;
+  }
+
+  .card-phonetic {
+    font-size: 14px; color: var(--text-secondary);
+    font-style: italic; text-align: center;
+  }
+
+  .card-english {
+    font-size: 24px; font-weight: 500; color: var(--text);
+    text-align: center; margin-bottom: 0.75rem;
+  }
+
+  .card-example {
+    font-size: 13px; color: var(--text-secondary);
+    text-align: center; max-width: 280px; line-height: 1.6;
+    border-top: 0.5px solid var(--border);
+    padding-top: 0.75rem; margin-top: 0.5rem;
+  }
+
+  .tap-hint { font-size: 12px; color: var(--text-tertiary); text-align: center; margin-bottom: 0.75rem; }
+
+  .card-actions { display: flex; gap: 8px; justify-content: center; margin-bottom: 0.75rem; }
+
+  .btn-know, .btn-learn {
+    flex: 1; max-width: 160px;
+    padding: 10px 0; border-radius: var(--radius);
+    border: 0.5px solid; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+    transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+
+  .btn-know {
+    background: var(--green-fill); color: var(--green-dark);
+    border-color: var(--green-mid);
+  }
+  .btn-know:hover { background: var(--green-light); }
+
+  .btn-learn {
+    background: var(--bg-danger); color: var(--text-danger);
+    border-color: var(--border-danger);
+  }
+  .btn-learn:hover { opacity: 0.8; }
+
+  .btn-next {
+    display: block; width: 100%;
+    padding: 10px; border-radius: var(--radius);
+    border: 0.5px solid var(--border-secondary);
+    background: transparent; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 14px;
+    color: var(--text-secondary); margin-bottom: 1rem;
+    transition: all 0.15s;
+  }
+  .btn-next:hover { background: var(--bg-secondary); }
+
+  /* MULTIPLE CHOICE */
+  .mc-question {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem 1.5rem; text-align: center;
+    margin-bottom: 1rem;
+    border: 0.5px solid var(--border);
+  }
+
+  .mc-danish {
+    font-family: 'DM Serif Display', serif;
+    font-size: 32px; margin-bottom: 0.5rem;
+  }
+
+  .mc-phonetic { font-size: 13px; color: var(--text-secondary); font-style: italic; }
+
+  .mc-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1rem; }
+
+  .mc-opt {
+    padding: 14px 8px; border-radius: var(--radius);
+    border: 0.5px solid var(--border);
+    background: var(--bg);
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; color: var(--text);
+    text-align: center; transition: all 0.15s;
+    line-height: 1.3;
+  }
+
+  .mc-opt:hover:not(.disabled) {
+    border-color: var(--border-primary);
+    background: var(--bg-secondary);
+  }
+
+  .mc-opt.correct {
+    background: var(--green-fill);
+    color: var(--green-dark);
+    border-color: var(--green-mid);
+  }
+
+  .mc-opt.wrong {
+    background: var(--bg-danger);
+    color: var(--text-danger);
+    border-color: var(--border-danger);
+  }
+
+  .mc-opt.disabled { cursor: default; }
+
+  /* REFERENCE */
+  .ref-section { margin-bottom: 1.75rem; }
+
+  .ref-title {
+    font-size: 12px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase;
+    color: var(--text-tertiary); margin-bottom: 0.5rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 0.5px solid var(--border);
+  }
+
+  .ref-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 9px 0; border-bottom: 0.5px solid var(--border);
+    gap: 1rem;
+  }
+
+  .ref-danish {
+    font-family: 'DM Serif Display', serif;
+    font-size: 17px; flex: 0 0 auto; min-width: 130px;
+  }
+
+  .ref-phonetic {
+    font-size: 12px; color: var(--text-tertiary);
+    font-style: italic; flex: 1; padding: 0 8px;
+  }
+
+  .ref-english { font-size: 13px; color: var(--text-secondary); flex: 0 0 auto; text-align: right; }
+
+  .verb-table {
+    width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 0.5rem;
+  }
+
+  .verb-table th {
+    text-align: left; padding: 6px 10px;
+    font-weight: 500; color: var(--text-secondary);
+    border-bottom: 0.5px solid var(--border);
+    font-size: 12px;
+  }
+
+  .verb-table td {
+    padding: 8px 10px;
+    border-bottom: 0.5px solid var(--border);
+  }
+
+  .verb-table td:first-child {
+    font-family: 'DM Serif Display', serif;
+    font-size: 15px;
+  }
+
+  .verb-table td:nth-child(2) {
+    font-family: 'DM Serif Display', serif;
+    font-size: 14px; color: var(--text-secondary);
+  }
+
+  .verb-table td:nth-child(3) {
+    font-family: 'DM Serif Display', serif;
+    font-size: 14px; color: var(--text-secondary);
+  }
+
+  .verb-table td:last-child { color: var(--text-tertiary); font-size: 12px; }
+
+  /* DONE SCREEN */
+  .done-screen { text-align: center; padding: 3rem 1rem; }
+  .done-emoji { font-size: 52px; margin-bottom: 1rem; }
+  .done-title { font-family: 'DM Serif Display', serif; font-size: 30px; margin-bottom: 0.5rem; }
+  .done-sub { color: var(--text-secondary); font-size: 14px; margin-bottom: 1.5rem; line-height: 1.6; }
+
+  .restart-btn {
+    padding: 10px 28px; border-radius: var(--radius);
+    background: var(--green-light); color: var(--green-dark);
+    border: 0.5px solid var(--green-mid);
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 500;
+    transition: all 0.15s;
+  }
+  .restart-btn:hover { opacity: 0.85; }
+
+  /* TIPS BANNER */
+  .tips-banner {
+    background: var(--bg-secondary);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    font-size: 12px; color: var(--text-secondary);
+    margin-bottom: 1rem;
+    display: flex; align-items: flex-start; gap: 8px;
+  }
+
+  .tips-banner i { color: var(--green-mid); flex-shrink: 0; margin-top: 1px; }
+
+  /* FOOTER */
+  .site-footer {
+    text-align: center; padding: 1.5rem 0 0.5rem;
+    font-size: 11px; color: var(--text-tertiary);
+    border-top: 0.5px solid var(--border);
+    margin-top: 2rem;
+  }
+
+  /* Keyboard shortcut hint */
+  kbd {
+    background: var(--bg-secondary);
+    border: 0.5px solid var(--border-secondary);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 11px;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* SENTENCE PRACTICE */
+  .sentence-card {
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .sentence-label {
+    font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-tertiary); margin-bottom: 0.75rem;
+  }
+
+  .sentence-prompt {
+    font-size: 15px; color: var(--text-secondary);
+    margin-bottom: 1rem; line-height: 1.6;
+    font-style: italic;
+  }
+
+  .sentence-en {
+    font-size: 17px; font-weight: 500; color: var(--text);
+    margin-bottom: 1.25rem; line-height: 1.5;
+  }
+
+  .blank-row {
+    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+    margin-bottom: 1rem; min-height: 44px;
+    padding: 10px 12px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius);
+    border: 0.5px solid var(--border);
+  }
+
+  .blank-word {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px; color: var(--text);
+  }
+
+  .blank-slot {
+    display: inline-block;
+    min-width: 80px; height: 32px;
+    border-bottom: 2px solid var(--green-mid);
+    background: transparent;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.15s;
+    vertical-align: middle;
+  }
+
+  .blank-slot.filled {
+    background: var(--green-fill);
+    border-radius: var(--radius);
+    border-bottom: 2px solid var(--green-mid);
+    padding: 0 8px;
+    font-family: 'DM Serif Display', serif;
+    font-size: 16px;
+    color: var(--green-dark);
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+
+  .blank-slot.wrong-slot {
+    background: var(--bg-danger);
+    border-bottom: 2px solid var(--border-danger);
+    color: var(--text-danger);
+  }
+
+  .word-bank {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1rem;
+  }
+
+  .word-chip {
+    padding: 6px 12px; border-radius: 20px;
+    border: 0.5px solid var(--border-secondary);
+    background: var(--bg); cursor: pointer;
+    font-family: 'DM Serif Display', serif;
+    font-size: 15px; color: var(--text);
+    transition: all 0.15s;
+  }
+
+  .word-chip:hover { background: var(--bg-secondary); border-color: var(--border-primary); }
+  .word-chip.used { opacity: 0.3; pointer-events: none; }
+
+  .sentence-feedback {
+    padding: 10px 14px; border-radius: var(--radius);
+    font-size: 14px; margin-bottom: 1rem;
+    display: none;
+  }
+
+  .sentence-feedback.correct {
+    background: var(--green-fill); color: var(--green-dark);
+    border: 0.5px solid var(--green-mid); display: block;
+  }
+
+  .sentence-feedback.wrong {
+    background: var(--bg-danger); color: var(--text-danger);
+    border: 0.5px solid var(--border-danger); display: block;
+  }
+
+  .phonetic-reveal {
+    font-size: 12px; color: var(--text-tertiary); font-style: italic;
+    margin-top: 6px;
+  }
+
+  /* ROLEPLAY */
+  .rp-scene {
+    background: var(--bg-secondary);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .rp-scene-title {
+    font-size: 12px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase;
+    color: var(--text-tertiary); margin-bottom: 0.25rem;
+  }
+
+  .rp-scene-desc {
+    font-size: 14px; color: var(--text-secondary); line-height: 1.5;
+  }
+
+  .rp-chat {
+    display: flex; flex-direction: column; gap: 10px;
+    margin-bottom: 1rem;
+  }
+
+  .rp-bubble {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 14px; line-height: 1.5;
+  }
+
+  .rp-bubble.them {
+    align-self: flex-start;
+    background: var(--bg-secondary);
+    border: 0.5px solid var(--border);
+    border-bottom-left-radius: 4px;
+  }
+
+  .rp-bubble.you {
+    align-self: flex-end;
+    background: var(--green-fill);
+    border: 0.5px solid var(--green-mid);
+    border-bottom-right-radius: 4px;
+    color: var(--green-dark);
+  }
+
+  .rp-bubble.you.pending {
+    background: var(--bg-secondary);
+    border-style: dashed;
+    color: var(--text-tertiary);
+    font-style: italic;
+  }
+
+  .rp-speaker {
+    font-size: 10px; font-weight: 500; text-transform: uppercase;
+    letter-spacing: 0.07em; color: var(--text-tertiary);
+    margin-bottom: 3px;
+  }
+
+  .rp-danish { font-family: 'DM Serif Display', serif; font-size: 16px; }
+  .rp-phonetic { font-size: 11px; color: var(--text-tertiary); font-style: italic; margin-top: 2px; }
+  .rp-english { font-size: 12px; color: var(--text-secondary); margin-top: 3px; }
+
+  .rp-choices {
+    display: flex; flex-direction: column; gap: 6px;
+    margin-bottom: 1rem;
+  }
+
+  .rp-choice {
+    padding: 12px 14px; border-radius: var(--radius);
+    border: 0.5px solid var(--border);
+    background: var(--bg); cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 13px;
+    color: var(--text); text-align: left;
+    transition: all 0.15s; line-height: 1.4;
+  }
+
+  .rp-choice:hover:not(.disabled) { border-color: var(--border-primary); background: var(--bg-secondary); }
+  .rp-choice .rp-choice-da { font-family: 'DM Serif Display', serif; font-size: 15px; display: block; }
+  .rp-choice .rp-choice-en { font-size: 12px; color: var(--text-tertiary); display: block; margin-top: 2px; }
+  .rp-choice.correct { background: var(--green-fill); border-color: var(--green-mid); color: var(--green-dark); }
+  .rp-choice.wrong { background: var(--bg-danger); border-color: var(--border-danger); color: var(--text-danger); }
+  .rp-choice.disabled { cursor: default; }
+
+  .rp-nav {
+    display: flex; gap: 8px; align-items: center; margin-bottom: 1rem;
+  }
+
+  .rp-scene-dots {
+    display: flex; gap: 5px; flex: 1; justify-content: center;
+  }
+
+  .rp-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--border-secondary);
+    transition: background 0.2s;
+  }
+
+  .rp-dot.done { background: var(--green-mid); }
+  .rp-dot.active { background: var(--green-dark); }
+
+  .rp-select-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1rem;
+  }
+
+  .rp-scene-btn {
+    padding: 14px 10px; border-radius: var(--radius);
+    border: 0.5px solid var(--border);
+    background: var(--bg); cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 13px;
+    color: var(--text); text-align: left;
+    transition: all 0.15s; line-height: 1.4;
+  }
+
+  .rp-scene-btn:hover { border-color: var(--border-primary); background: var(--bg-secondary); }
+  .rp-scene-btn .scene-icon { font-size: 20px; display: block; margin-bottom: 5px; }
+  .rp-scene-btn .scene-name { font-weight: 500; display: block; }
+  .rp-scene-btn .scene-sub { font-size: 11px; color: var(--text-tertiary); display: block; margin-top: 2px; }
+
+  @media (max-width: 480px) {
+    .mc-options { grid-template-columns: 1fr; }
+    .card-danish { font-size: 28px; }
+    .ref-row { flex-wrap: wrap; }
+    .ref-danish { min-width: unset; }
+    .rp-select-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <span class="logo">Dansk 🇩🇰</span>
+    <span class="science-tip">spaced repetition + active recall</span>
+  </div>
+
+  <div class="tabs" id="category-tabs"></div>
+
+  <div class="mode-bar">
+    <button class="mode-btn active" onclick="setMode('flash')" id="mode-flash">
+      <i class="ti ti-cards" aria-hidden="true"></i> Flashcards
+    </button>
+    <button class="mode-btn" onclick="setMode('quiz')" id="mode-quiz">
+      <i class="ti ti-help" aria-hidden="true"></i> Quiz
+    </button>
+    <button class="mode-btn" onclick="setMode('sentences')" id="mode-sentences">
+      <i class="ti ti-pencil" aria-hidden="true"></i> Sentences
+    </button>
+    <button class="mode-btn" onclick="setMode('roleplay')" id="mode-roleplay">
+      <i class="ti ti-messages" aria-hidden="true"></i> Roleplay
+    </button>
+    <button class="mode-btn" onclick="setMode('ref')" id="mode-ref">
+      <i class="ti ti-list" aria-hidden="true"></i> Reference
+    </button>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="prog-bar" style="width:0%"></div>
+    </div>
+    <span class="score-badge" id="score-badge">0 / 0</span>
+  </div>
+
+  <div id="main-area"></div>
+
+  <footer class="site-footer">
+    Built for Denmark in 3 days &nbsp;·&nbsp; Keyboard: <kbd>Space</kbd> flip &nbsp;·&nbsp; <kbd>→</kbd> next &nbsp;·&nbsp; <kbd>1</kbd> got it &nbsp;·&nbsp; <kbd>2</kbd> still learning
+  </footer>
+</div>
+
+<script>
+const DATA = {
+  greetings: {
+    label: "👋 Greetings",
+    tip: "Danes are understated — a simple 'Hej' and eye contact goes a long way. Always say 'Tak' (thank you) generously.",
+    cards: [
+      { da: "Hej", ph: "hi", en: "Hello / Hi", ex: "Hej! Hvordan går det? — Hi! How are you?" },
+      { da: "Hej hej", ph: "hi hi", en: "Bye bye (casual)", ex: "Common Danish farewell" },
+      { da: "God morgen", ph: "goh mor-on", en: "Good morning", ex: "God morgen! — Good morning!" },
+      { da: "God aften", ph: "goh af-ten", en: "Good evening", ex: "God aften alle sammen — Good evening everyone" },
+      { da: "Farvel", ph: "far-vel", en: "Goodbye (formal)", ex: "Farvel og tak! — Goodbye and thanks!" },
+      { da: "Tak", ph: "tahk", en: "Thank you", ex: "Mange tak — Many thanks" },
+      { da: "Mange tak", ph: "mang-eh tahk", en: "Thank you very much", ex: "Mange tak for hjælpen! — Thanks so much!" },
+      { da: "Undskyld", ph: "un-skyl", en: "Excuse me / Sorry", ex: "Undskyld mig — Excuse me" },
+      { da: "Ja / Nej", ph: "ya / nay", en: "Yes / No", ex: "Ja tak / Nej tak — Yes please / No thanks" },
+      { da: "Vær så venlig", ph: "ver so ven-lee", en: "Please (formal)", ex: "Vær så venlig at hjælpe mig — Please help me" },
+      { da: "Hvad hedder du?", ph: "vad heh-uh doo", en: "What is your name?", ex: "Jeg hedder Anna — My name is Anna" },
+      { da: "Jeg hedder...", ph: "yi heh-uh", en: "My name is...", ex: "Jeg hedder [name] — My name is [name]" },
+      { da: "Jeg forstår ikke", ph: "yi for-stor ig-uh", en: "I don't understand", ex: "Taler du engelsk? — Do you speak English?" },
+      { da: "Taler du engelsk?", ph: "tay-luh doo eng-elsk", en: "Do you speak English?", ex: "Most Danes will say yes!" },
+      { da: "Hvor er...?", ph: "vor er", en: "Where is...?", ex: "Hvor er toilettet? — Where is the toilet?" },
+    ]
+  },
+  grocery: {
+    label: "🛒 Grocery",
+    tip: "Supermarkets: Netto (budget), Føtex, Bilka, Irma (premium). Bring your own bag (pose) — bags cost extra. Self-checkout is common.",
+    cards: [
+      { da: "Jeg vil gerne have...", ph: "yi vil ger-nuh ha", en: "I would like...", ex: "Jeg vil gerne have mælk — I'd like milk" },
+      { da: "Hvad koster det?", ph: "vad kos-uh deh", en: "How much does it cost?", ex: "Hvad koster dette? — How much is this?" },
+      { da: "Kan jeg få...?", ph: "kan yi foh", en: "Can I have...?", ex: "Kan jeg få en pose? — Can I have a bag?" },
+      { da: "Mælk", ph: "melk", en: "Milk", ex: "En liter mælk — One liter of milk" },
+      { da: "Brød", ph: "bruth", en: "Bread", ex: "Et rugbrød — A rye bread (Danish staple!)" },
+      { da: "Smør", ph: "smur", en: "Butter", ex: "Dansk smør — Danish butter" },
+      { da: "Ost", ph: "ohst", en: "Cheese", ex: "En skive ost — A slice of cheese" },
+      { da: "Kød", ph: "kuth", en: "Meat", ex: "Har I kød? — Do you have meat?" },
+      { da: "Kylling", ph: "kewl-ing", en: "Chicken", ex: "En hel kylling — A whole chicken" },
+      { da: "Fisk", ph: "fisk", en: "Fish", ex: "Frisk fisk — Fresh fish" },
+      { da: "Grøntsager", ph: "grun-sa-yuh", en: "Vegetables", ex: "Friske grøntsager — Fresh vegetables" },
+      { da: "Frugt", ph: "froogt", en: "Fruit", ex: "Sæsonens frugt — Seasonal fruit" },
+      { da: "Æg", ph: "eg", en: "Eggs", ex: "En bakke æg — A tray of eggs" },
+      { da: "Vand", ph: "van", en: "Water", ex: "En flaske vand — A bottle of water" },
+      { da: "Øl", ph: "ul", en: "Beer", ex: "En øl tak — A beer please" },
+      { da: "Kaffe", ph: "kaf-uh", en: "Coffee", ex: "En kop kaffe — A cup of coffee" },
+      { da: "Kassen", ph: "kas-en", en: "The checkout", ex: "Hvor er kassen? — Where is the checkout?" },
+      { da: "Pose", ph: "po-suh", en: "Bag", ex: "Kan jeg få en pose? — Can I have a bag?" },
+      { da: "Kvittering", ph: "kvit-er-ing", en: "Receipt", ex: "Kan jeg få en kvittering? — Can I have a receipt?" },
+      { da: "Tilbud", ph: "til-boo", en: "Sale / Special offer", ex: "Er det på tilbud? — Is it on sale?" },
+    ]
+  },
+  transport: {
+    label: "🚌 Transport",
+    tip: "Get the Rejsekort (travel card) for trains, bus, and metro. Tap in and tap out! Copenhagen is very bike-friendly.",
+    cards: [
+      { da: "Billet", ph: "bil-et", en: "Ticket", ex: "Én billet til centrum — One ticket to the center" },
+      { da: "Rejsekort", ph: "ry-suh-kort", en: "Travel card", ex: "Denmark's rechargeable transit card" },
+      { da: "Togstation", ph: "toh-sta-shon", en: "Train station", ex: "Hvor er togstationen? — Where is the train station?" },
+      { da: "Lufthavn", ph: "looft-hown", en: "Airport", ex: "Kastrup Lufthavn — Copenhagen Airport" },
+      { da: "Bus", ph: "boos", en: "Bus", ex: "Hvilken bus går til...? — Which bus goes to...?" },
+      { da: "Metro", ph: "met-ro", en: "Metro", ex: "Næste metrostation — Next metro station" },
+      { da: "Taxaen", ph: "tax-ah-en", en: "The taxi", ex: "Ring efter en taxa — Call a taxi" },
+      { da: "Cykel", ph: "see-kel", en: "Bicycle", ex: "Kan jeg leje en cykel? — Can I rent a bicycle?" },
+      { da: "Til venstre", ph: "til ven-struh", en: "To the left", ex: "Drej til venstre — Turn left" },
+      { da: "Til højre", ph: "til hoy-ruh", en: "To the right", ex: "Drej til højre — Turn right" },
+      { da: "Ligeud", ph: "lee-yuh-ooth", en: "Straight ahead", ex: "Gå ligeud — Go straight ahead" },
+      { da: "Stop", ph: "stop", en: "Stop", ex: "Næste stop — Next stop" },
+      { da: "Afgangstid", ph: "av-gangs-teed", en: "Departure time", ex: "Hvornår er afgangstiden? — When is departure?" },
+      { da: "Ankomsttid", ph: "an-komst-teed", en: "Arrival time", ex: "Hvornår ankommer toget? — When does it arrive?" },
+      { da: "Perron", ph: "peh-ron", en: "Platform", ex: "Hvilken perron? — Which platform?" },
+      { da: "Hvor går bussen til...?", ph: "vor gor boos-en til", en: "Where does the bus to... go?", ex: "Essential for navigation" },
+    ]
+  },
+  numbers: {
+    label: "🔢 Numbers",
+    tip: "Danish numbers are notoriously tricky! 'Halvtreds' (50) means 'half-third-twenty'. Just learn the basics and use your phone for bigger numbers.",
+    cards: [
+      { da: "En / Et", ph: "en / et", en: "One", ex: "En kop kaffe — One cup of coffee" },
+      { da: "To", ph: "toh", en: "Two", ex: "To billetter — Two tickets" },
+      { da: "Tre", ph: "treh", en: "Three", ex: "Tre stop — Three stops" },
+      { da: "Fire", ph: "fee-ruh", en: "Four", ex: "Fire kroner — Four kroner" },
+      { da: "Fem", ph: "fem", en: "Five", ex: "Fem minutter — Five minutes" },
+      { da: "Seks", ph: "sex", en: "Six", ex: "" },
+      { da: "Syv", ph: "seew", en: "Seven", ex: "" },
+      { da: "Otte", ph: "oh-duh", en: "Eight", ex: "" },
+      { da: "Ni", ph: "nee", en: "Nine", ex: "" },
+      { da: "Ti", ph: "tee", en: "Ten", ex: "Ti minutter — Ten minutes" },
+      { da: "Tyve", ph: "tew-vuh", en: "Twenty", ex: "" },
+      { da: "Tredive", ph: "treth-uh", en: "Thirty", ex: "" },
+      { da: "Halvtreds", ph: "hal-tres", en: "Fifty", ex: "Literally 'half-third-twenty' — just memorize it!" },
+      { da: "Hundrede", ph: "hun-druh", en: "Hundred", ex: "To hundrede kroner — Two hundred kroner" },
+      { da: "Kroner", ph: "kro-nuh", en: "Danish Kroner (DKK)", ex: "~6.7 DKK = 1 USD (2025)" },
+    ]
+  },
+  emergency: {
+    label: "🚨 Emergency",
+    tip: "Emergency number in Denmark is 112. Most Danes speak excellent English so don't panic — say 'Jeg har brug for hjælp' and switch to English.",
+    cards: [
+      { da: "Hjælp!", ph: "yelp", en: "Help!", ex: "" },
+      { da: "Ring 112", ph: "ring et-en-to", en: "Call 112", ex: "Denmark's single emergency number for all services" },
+      { da: "Jeg er syg", ph: "yi er seew", en: "I am sick", ex: "Jeg har det dårligt — I feel unwell" },
+      { da: "Jeg har brug for hjælp", ph: "yi har broo for yelp", en: "I need help", ex: "" },
+      { da: "Læge", ph: "lay-yuh", en: "Doctor", ex: "Jeg har brug for en læge — I need a doctor" },
+      { da: "Hospital", ph: "hos-pee-tal", en: "Hospital", ex: "Hvor er hospitalet? — Where is the hospital?" },
+      { da: "Apotek", ph: "ap-oh-tek", en: "Pharmacy", ex: "Er der et apotek i nærheden? — Is there a pharmacy nearby?" },
+      { da: "Politi", ph: "pol-ih-tee", en: "Police", ex: "" },
+      { da: "Mit pas", ph: "meet pas", en: "My passport", ex: "Jeg har mistet mit pas — I've lost my passport" },
+      { da: "Jeg er allergisk over for...", ph: "yi er ah-ler-gisk oh-vuh for", en: "I am allergic to...", ex: "Essential if you have allergies!" },
+    ]
+  }
+};
+
+const VERBS = [
+  { inf: "At være", pres: "er", past: "var", en: "to be" },
+  { inf: "At have", pres: "har", past: "havde", en: "to have" },
+  { inf: "At gå", pres: "går", past: "gik", en: "to go / walk" },
+  { inf: "At tage", pres: "tager", past: "tog", en: "to take / travel" },
+  { inf: "At ville", pres: "vil", past: "ville", en: "to want" },
+  { inf: "At forstå", pres: "forstår", past: "forstod", en: "to understand" },
+  { inf: "At hjælpe", pres: "hjælper", past: "hjalp", en: "to help" },
+  { inf: "At købe", pres: "køber", past: "købte", en: "to buy" },
+  { inf: "At betale", pres: "betaler", past: "betalte", en: "to pay" },
+  { inf: "At finde", pres: "finder", past: "fandt", en: "to find" },
+  { inf: "At spise", pres: "spiser", past: "spiste", en: "to eat" },
+  { inf: "At drikke", pres: "drikker", past: "drak", en: "to drink" },
+  { inf: "At komme", pres: "kommer", past: "kom", en: "to come / arrive" },
+  { inf: "At tale", pres: "taler", past: "talte", en: "to speak / talk" },
+];
+
+let currentCat = 'greetings';
+let mode = 'flash';
+let deck = [];
+let idx = 0;
+let flipped = false;
+let known = 0;
+let total = 0;
+let mcAnswered = false;
+
+function shuffle(arr) {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
+function buildDeck(cat) {
+  deck = shuffle(DATA[cat].cards);
+  idx = 0; known = 0; total = 0; flipped = false; mcAnswered = false;
+}
+
+function setCategory(cat) {
+  currentCat = cat;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + cat).classList.add('active');
+  buildDeck(cat);
+  render();
+}
+
+function setMode(m) {
+  mode = m;
+  ['flash','quiz','sentences','roleplay','ref'].forEach(id => {
+    const el = document.getElementById('mode-' + id);
+    if (el) el.classList.toggle('active', id === m);
+  });
+  if (m === 'sentences') { buildSentDeck(); }
+  else if (m === 'roleplay') { rpScene = null; }
+  else if (m !== 'ref') { buildDeck(currentCat); }
+  render();
+}
+
+function updateProgress() {
+  const t = deck.length;
+  const pct = t ? Math.round((idx / t) * 100) : 0;
+  document.getElementById('prog-bar').style.width = pct + '%';
+  document.getElementById('score-badge').textContent = (mode === 'flash' ? idx : known) + ' / ' + t;
+}
+
+function render() {
+  const area = document.getElementById('main-area');
+  if (mode === 'ref') { renderRef(); return; }
+  if (mode === 'sentences') { renderSentences(area); return; }
+  if (mode === 'roleplay') { renderRoleplaySelect(area); return; }
+  updateProgress();
+  if (idx >= deck.length) { renderDone(area); return; }
+  if (mode === 'flash') renderFlash(area);
+  else renderQuiz(area);
+}
+
+function renderFlash(area) {
+  const card = deck[idx];
+  const catData = DATA[currentCat];
+  area.innerHTML = `
+    <div class="tips-banner">
+      <i class="ti ti-bulb" aria-hidden="true"></i>
+      <span>${catData.tip}</span>
+    </div>
+    <div class="card-wrap" onclick="flipCard()" id="card-wrap" role="button" aria-label="Flip card">
+      <div class="card-inner" id="card-inner">
+        <div class="card-face card-front">
+          <div class="card-category">${catData.label} &nbsp;·&nbsp; ${idx + 1} of ${deck.length}</div>
+          <div class="card-danish">${card.da}</div>
+          <div class="card-phonetic">[${card.ph}]</div>
+        </div>
+        <div class="card-face card-back">
+          <div class="card-category">${catData.label}</div>
+          <div class="card-english">${card.en}</div>
+          ${card.ex ? `<div class="card-example">${card.ex}</div>` : ''}
+        </div>
+      </div>
+    </div>
+    <p class="tap-hint" id="tap-hint"><i class="ti ti-rotate" aria-hidden="true"></i> tap to reveal &nbsp;·&nbsp; <kbd>Space</kbd></p>
+    <div class="card-actions" id="card-actions" style="display:none">
+      <button class="btn-learn" onclick="markCard(false)"><i class="ti ti-refresh" aria-hidden="true"></i> Still learning</button>
+      <button class="btn-know" onclick="markCard(true)"><i class="ti ti-check" aria-hidden="true"></i> Got it!</button>
+    </div>
+    <button class="btn-next" onclick="nextCard()">Skip →</button>
+  `;
+  flipped = false;
+}
+
+function flipCard() {
+  if (mode !== 'flash') return;
+  flipped = !flipped;
+  document.getElementById('card-inner').classList.toggle('flipped', flipped);
+  document.getElementById('tap-hint').style.display = flipped ? 'none' : '';
+  document.getElementById('card-actions').style.display = flipped ? 'flex' : 'none';
+}
+
+function markCard(didKnow) {
+  if (didKnow) known++;
+  total++;
+  nextCard();
+}
+
+function nextCard() {
+  idx++;
+  flipped = false;
+  mcAnswered = false;
+  render();
+}
+
+function renderQuiz(area) {
+  const card = deck[idx];
+  const allCards = DATA[currentCat].cards;
+  const others = allCards.filter(c => c.da !== card.da);
+  const distractors = shuffle(others).slice(0, 3);
+  const options = shuffle([...distractors, card]);
+  const correctIdx = options.indexOf(card);
+
+  area.innerHTML = `
+    <div class="tips-banner">
+      <i class="ti ti-brain" aria-hidden="true"></i>
+      <span>Active recall: choose the correct English translation.</span>
+    </div>
+    <div class="mc-question">
+      <div class="card-category">${DATA[currentCat].label} &nbsp;·&nbsp; ${idx + 1} of ${deck.length}</div>
+      <div class="mc-danish">${card.da}</div>
+      <div class="mc-phonetic">[${card.ph}]</div>
+    </div>
+    <div class="mc-options">
+      ${options.map((o, i) => `<button class="mc-opt" id="opt-${i}" onclick="checkAnswer(${i}, ${correctIdx})">${o.en}</button>`).join('')}
+    </div>
+    <button class="btn-next" onclick="nextCard()" id="quiz-next" style="display:none">Next card →</button>
+  `;
+}
+
+function checkAnswer(chosen, correct) {
+  if (mcAnswered) return;
+  mcAnswered = true;
+  document.querySelectorAll('.mc-opt').forEach((el, i) => {
+    el.classList.add('disabled');
+    if (i === correct) el.classList.add('correct');
+    else if (i === chosen && chosen !== correct) el.classList.add('wrong');
+  });
+  if (chosen === correct) known++;
+  total++;
+  document.getElementById('quiz-next').style.display = 'block';
+  updateProgress();
+}
+
+function renderDone(area) {
+  const pct = total ? Math.round((known / total) * 100) : 0;
+  let msg, emoji;
+  if (pct >= 85) { msg = 'Imponerende! You nailed it.'; emoji = '🎉'; }
+  else if (pct >= 60) { msg = 'Godt gået! Getting there.'; emoji = '👍'; }
+  else { msg = 'Øv — practice makes perfect!'; emoji = '💪'; }
+
+  area.innerHTML = `
+    <div class="done-screen">
+      <div class="done-emoji">${emoji}</div>
+      <div class="done-title">${msg}</div>
+      <div class="done-sub">
+        You got <strong>${known}</strong> of <strong>${total}</strong> correct (${pct}%)<br>
+        in the <strong>${DATA[currentCat].label}</strong> category.<br><br>
+        <span style="font-size:12px; color:var(--text-tertiary)">Science tip: review this deck again in 1 hour, then tomorrow, for maximum retention.</span>
+      </div>
+      <button class="restart-btn" onclick="buildDeck(currentCat); render()">Practice again ↺</button>
+    </div>
+  `;
+  document.getElementById('prog-bar').style.width = '100%';
+}
+
+function renderRef() {
+  const area = document.getElementById('main-area');
+  let html = '';
+
+  Object.entries(DATA).forEach(([key, cat]) => {
+    html += `<div class="ref-section">
+      <div class="ref-title">${cat.label}</div>
+      ${cat.cards.map(c => `
+        <div class="ref-row">
+          <span class="ref-danish">${c.da}</span>
+          <span class="ref-phonetic">[${c.ph}]</span>
+          <span class="ref-english">${c.en}</span>
+        </div>
+      `).join('')}
+    </div>`;
+  });
+
+  html += `<div class="ref-section">
+    <div class="ref-title">⚡ Essential verbs — infinitive · present · past</div>
+    <table class="verb-table">
+      <thead>
+        <tr>
+          <th>Infinitive</th>
+          <th>Present</th>
+          <th>Past</th>
+          <th>Meaning</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${VERBS.map(v => `<tr>
+          <td>${v.inf}</td>
+          <td>${v.pres}</td>
+          <td>${v.past}</td>
+          <td>${v.en}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="ref-section">
+    <div class="ref-title">🔑 Survival sentence patterns</div>
+    ${[
+      ['Jeg vil gerne have ___', 'yi vil ger-nuh ha', "I would like ___ (most useful phrase!)"],
+      ['Kan jeg få ___?', 'kan yi foh', "Can I have ___?"],
+      ['Hvor er ___?', 'vor er', "Where is ___?"],
+      ['Hvad koster ___?', 'vad kos-uh', "How much does ___ cost?"],
+      ['Taler du engelsk?', 'tay-luh doo eng-elsk', "Do you speak English?"],
+      ['Jeg forstår ikke', 'yi for-stor ig-uh', "I don't understand"],
+      ['Kan du gentage det?', 'kan doo gen-tay-uh deh', "Can you repeat that?"],
+    ].map(([da, ph, en]) => `
+      <div class="ref-row">
+        <span class="ref-danish">${da}</span>
+        <span class="ref-phonetic">[${ph}]</span>
+        <span class="ref-english">${en}</span>
+      </div>
+    `).join('')}
+  </div>`;
+
+  area.innerHTML = html;
+  document.getElementById('prog-bar').style.width = '100%';
+  document.getElementById('score-badge').textContent = '✓ all';
+}
+
+// ─── SENTENCE PRACTICE DATA ───────────────────────────────────────────────
+const SENTENCES = [
+  {
+    en: "I would like a bag, please.",
+    da: ["Jeg", "vil", "gerne", "have", "en", "pose,", "tak."],
+    ph: "Yi vil ger-nuh ha en po-suh, tahk",
+    context: "At the grocery checkout",
+    extra: ["Nej", "ikke", "koster", "finder"]
+  },
+  {
+    en: "How much does this cost?",
+    da: ["Hvad", "koster", "det?"],
+    ph: "Vad kos-uh deh",
+    context: "Pointing at an item in a shop",
+    extra: ["Hvor", "er", "ikke", "vil"]
+  },
+  {
+    en: "Where is the train station?",
+    da: ["Hvor", "er", "togstationen?"],
+    ph: "Vor er toh-sta-shon-en",
+    context: "Asking for directions",
+    extra: ["Hvad", "koster", "går", "bussen"]
+  },
+  {
+    en: "Excuse me, I don't understand.",
+    da: ["Undskyld,", "jeg", "forstår", "ikke."],
+    ph: "Un-skyl, yi for-stor ig-uh",
+    context: "When someone speaks too fast",
+    extra: ["Tak", "hej", "vil", "meget"]
+  },
+  {
+    en: "Do you speak English?",
+    da: ["Taler", "du", "engelsk?"],
+    ph: "Tay-luh doo eng-elsk",
+    context: "Your emergency backup phrase!",
+    extra: ["Forstår", "jeg", "ikke", "har"]
+  },
+  {
+    en: "I would like one ticket to Copenhagen.",
+    da: ["Jeg", "vil", "gerne", "have", "en", "billet", "til", "København."],
+    ph: "Yi vil ger-nuh ha en bil-et til Kuh-ben-hown",
+    context: "At the train station ticket counter",
+    extra: ["Tak", "bus", "koster", "hvad"]
+  },
+  {
+    en: "Can I pay by card?",
+    da: ["Kan", "jeg", "betale", "med", "kort?"],
+    ph: "Kan yi beh-tay-luh meth kort",
+    context: "At any checkout — Denmark is very card-friendly",
+    extra: ["Vil", "gerne", "have", "tak"]
+  },
+  {
+    en: "Where is the nearest pharmacy?",
+    da: ["Hvor", "er", "det", "nærmeste", "apotek?"],
+    ph: "Vor er deh ner-meh-stuh ap-oh-tek",
+    context: "When you need medicine",
+    extra: ["hvad", "koster", "vil", "gerne"]
+  },
+  {
+    en: "Two tickets, please.",
+    da: ["To", "billetter,", "tak."],
+    ph: "Toh bil-et-uh, tahk",
+    context: "Buying transit tickets",
+    extra: ["Tre", "en", "billet", "gerne"]
+  },
+  {
+    en: "Turn left at the corner.",
+    da: ["Drej", "til", "venstre", "ved", "hjørnet."],
+    ph: "Dry til ven-struh veth yor-net",
+    context: "Giving or following directions",
+    extra: ["højre", "ligeud", "metro", "stop"]
+  },
+  {
+    en: "I need a doctor.",
+    da: ["Jeg", "har", "brug", "for", "en", "læge."],
+    ph: "Yi har broo for en lay-yuh",
+    context: "Medical emergency",
+    extra: ["vil", "gerne", "ikke", "forstår"]
+  },
+  {
+    en: "Go straight ahead and then turn right.",
+    da: ["Gå", "ligeud", "og", "drej", "til", "højre."],
+    ph: "Go lee-yuh-ooth oh dry til hoy-ruh",
+    context: "Giving directions",
+    extra: ["venstre", "stop", "metro", "bus"]
+  },
+];
+
+// ─── ROLEPLAY SCENE DATA ──────────────────────────────────────────────────
+const SCENES = [
+  {
+    id: "checkout",
+    icon: "🛒",
+    name: "At the Checkout",
+    sub: "Supermarket • paying & bags",
+    tip: "Cashiers often ask about bags and loyalty cards quickly. 'Nej tak' is your friend.",
+    turns: [
+      {
+        them: { da: "Hej! Har du et Coop-kort?", ph: "hi! har doo et Coop-kort", en: "Hi! Do you have a Coop loyalty card?" },
+        choices: [
+          { da: "Nej, desværre.", ph: "nay, des-veh-ruh", en: "No, unfortunately.", correct: true },
+          { da: "Ja, to billetter.", ph: "ya, toh bil-et-uh", en: "Yes, two tickets.", correct: false },
+          { da: "Hvad koster det?", ph: "vad kos-uh deh", en: "How much does it cost?", correct: false },
+        ]
+      },
+      {
+        them: { da: "Vil du have en pose?", ph: "vil doo ha en po-suh", en: "Do you want a bag?" },
+        choices: [
+          { da: "Ja tak, én pose.", ph: "ya tahk, en po-suh", en: "Yes please, one bag.", correct: true },
+          { da: "Nej tak.", ph: "nay tahk", en: "No thank you.", correct: true },
+          { da: "Undskyld, hvor er kassen?", ph: "un-skyl, vor er kas-en", en: "Excuse me, where is the checkout?", correct: false },
+        ],
+        multiCorrect: true,
+        hint: "Both 'yes' and 'no' are correct here — pick what you want!"
+      },
+      {
+        them: { da: "Det bliver 187 kroner.", ph: "deh bli-uh 187 kro-nuh", en: "That will be 187 kroner." },
+        choices: [
+          { da: "Kan jeg betale med kort?", ph: "kan yi beh-tay-luh meth kort", en: "Can I pay by card?", correct: true },
+          { da: "Jeg vil gerne have mælk.", ph: "yi vil ger-nuh ha melk", en: "I would like milk.", correct: false },
+          { da: "Farvel og tak!", ph: "far-vel oh tahk", en: "Goodbye and thanks!", correct: false },
+        ]
+      },
+      {
+        them: { da: "Selvfølgelig. Tap dit kort her.", ph: "sel-fol-yuh-lee. tap deet kort her", en: "Of course. Tap your card here." },
+        choices: [
+          { da: "Mange tak!", ph: "mang-eh tahk", en: "Thank you very much!", correct: true },
+          { da: "Jeg forstår ikke.", ph: "yi for-stor ig-uh", en: "I don't understand.", correct: false },
+          { da: "Hvad koster det?", ph: "vad kos-uh deh", en: "How much does it cost?", correct: false },
+        ]
+      },
+    ]
+  },
+  {
+    id: "bus",
+    icon: "🚌",
+    name: "Taking the Bus",
+    sub: "Transport • tickets & stops",
+    tip: "Tap your Rejsekort when boarding AND exiting. Ask the driver if unsure — they're used to tourists.",
+    turns: [
+      {
+        them: { da: "Goddag! Kan jeg hjælpe dig?", ph: "goh-da! kan yi yelp di", en: "Good day! Can I help you?" },
+        choices: [
+          { da: "Ja tak. Går denne bus til centrum?", ph: "ya tahk. gor den-uh boos til sen-trum", en: "Yes please. Does this bus go to the center?", correct: true },
+          { da: "Vil du have en pose?", ph: "vil doo ha en po-suh", en: "Do you want a bag?", correct: false },
+          { da: "Jeg er syg.", ph: "yi er seew", en: "I am sick.", correct: false },
+        ]
+      },
+      {
+        them: { da: "Ja, det gør den. Det er stop nummer syv.", ph: "ya, deh gur den. deh er stop num-uh seew", en: "Yes it does. It's stop number seven." },
+        choices: [
+          { da: "Tusind tak!", ph: "too-sin tahk", en: "A thousand thanks! (very grateful)", correct: true },
+          { da: "Nej, desværre.", ph: "nay, des-veh-ruh", en: "No, unfortunately.", correct: false },
+          { da: "Farvel!", ph: "far-vel", en: "Goodbye!", correct: false },
+        ]
+      },
+      {
+        them: { da: "Vil du have en billet?", ph: "vil doo ha en bil-et", en: "Do you want a ticket?" },
+        choices: [
+          { da: "Ja tak, én enkeltbillet.", ph: "ya tahk, en en-kelt-bil-et", en: "Yes please, one single ticket.", correct: true },
+          { da: "Nej, jeg har et Rejsekort.", ph: "nay, yi har et ry-suh-kort", en: "No, I have a travel card.", correct: true },
+          { da: "Hvor er togstationen?", ph: "vor er toh-sta-shon-en", en: "Where is the train station?", correct: false },
+        ],
+        multiCorrect: true,
+        hint: "Both are valid — use whichever fits your situation!"
+      },
+      {
+        them: { da: "Næste stop: Rådhuspladsen.", ph: "nes-tuh stop: roh-hoos-pla-sen", en: "Next stop: City Hall Square." },
+        choices: [
+          { da: "Er det mit stop?", ph: "er deh meet stop", en: "Is that my stop?", correct: true },
+          { da: "Undskyld, jeg forstår ikke.", ph: "un-skyl, yi for-stor ig-uh", en: "Excuse me, I don't understand.", correct: false },
+          { da: "Mange tak og farvel!", ph: "mang-eh tahk oh far-vel", en: "Many thanks and goodbye!", correct: true },
+        ],
+        multiCorrect: true,
+        hint: "Either works depending on whether it's your stop!"
+      },
+    ]
+  },
+  {
+    id: "cafe",
+    icon: "☕",
+    name: "Ordering at a Café",
+    sub: "Food & drink • ordering",
+    tip: "Danes love their coffee. 'En kaffe' is espresso-style. Ask for 'en stor kop kaffe' for a large drip coffee.",
+    turns: [
+      {
+        them: { da: "Hej! Hvad må det være?", ph: "hi! vad mo deh veh-ruh", en: "Hi! What will it be?" },
+        choices: [
+          { da: "En kaffe og et stykke kage, tak.", ph: "en kaf-uh oh et stew-guh kay-uh, tahk", en: "A coffee and a piece of cake, please.", correct: true },
+          { da: "Jeg vil gerne have en billet.", ph: "yi vil ger-nuh ha en bil-et", en: "I would like a ticket.", correct: false },
+          { da: "Undskyld, taler du engelsk?", ph: "un-skyl, tay-luh doo eng-elsk", en: "Excuse me, do you speak English?", correct: false },
+        ]
+      },
+      {
+        them: { da: "Med mælk?", ph: "meth melk", en: "With milk?" },
+        choices: [
+          { da: "Ja tak, lidt mælk.", ph: "ya tahk, lit melk", en: "Yes please, a little milk.", correct: true },
+          { da: "Nej tak, sort.", ph: "nay tahk, sort", en: "No thanks, black.", correct: true },
+          { da: "Kan jeg betale med kort?", ph: "kan yi beh-tay-luh meth kort", en: "Can I pay by card?", correct: false },
+        ],
+        multiCorrect: true,
+        hint: "Answer based on how you take your coffee!"
+      },
+      {
+        them: { da: "Det bliver 65 kroner, tak.", ph: "deh bli-uh 65 kro-nuh, tahk", en: "That will be 65 kroner, thanks." },
+        choices: [
+          { da: "Værsgo.", ph: "ver-sgo", en: "Here you go. (handing over payment)", correct: true },
+          { da: "Kan jeg få en kvittering?", ph: "kan yi foh en kvit-er-ing", en: "Can I have a receipt?", correct: true },
+          { da: "Hvor er toilettet?", ph: "vor er toy-let-uh", en: "Where is the toilet?", correct: false },
+        ],
+        multiCorrect: true,
+        hint: "'Værsgo' is very useful — it means 'here you go' when handing something."
+      },
+      {
+        them: { da: "God fornøjelse!", ph: "goh for-noy-el-suh", en: "Enjoy! (bon appétit)" },
+        choices: [
+          { da: "Tak for det!", ph: "tahk for deh", en: "Thanks for that!", correct: true },
+          { da: "Hej hej!", ph: "hi hi", en: "Bye bye!", correct: false },
+          { da: "Jeg vil gerne have mere.", ph: "yi vil ger-nuh ha meh-ruh", en: "I would like more.", correct: false },
+        ]
+      },
+    ]
+  },
+  {
+    id: "hotel",
+    icon: "🏨",
+    name: "Hotel Check-In",
+    sub: "Accommodation • arrival",
+    tip: "Most Danish hotel staff speak excellent English, but starting in Danish earns instant goodwill!",
+    turns: [
+      {
+        them: { da: "Goddag! Har du en reservation?", ph: "goh-da! har doo en res-er-vah-shon", en: "Good day! Do you have a reservation?" },
+        choices: [
+          { da: "Ja, jeg har en reservation.", ph: "ya, yi har en res-er-vah-shon", en: "Yes, I have a reservation.", correct: true },
+          { da: "Nej, desværre.", ph: "nay, des-veh-ruh", en: "No, unfortunately.", correct: false },
+          { da: "Hvad koster det?", ph: "vad kos-uh deh", en: "How much does it cost?", correct: false },
+        ]
+      },
+      {
+        them: { da: "Hvad er dit navn?", ph: "vad er deet nown", en: "What is your name?" },
+        choices: [
+          { da: "Jeg hedder [dit navn].", ph: "yi heh-uh [your name]", en: "My name is [your name].", correct: true },
+          { da: "Jeg forstår ikke.", ph: "yi for-stor ig-uh", en: "I don't understand.", correct: false },
+          { da: "To billetter, tak.", ph: "toh bil-et-uh, tahk", en: "Two tickets, please.", correct: false },
+        ]
+      },
+      {
+        them: { da: "Dit værelse er nummer 214. Her er din nøgle.", ph: "deet veh-rel-suh er num-uh 214. her er deen noy-luh", en: "Your room is number 214. Here is your key." },
+        choices: [
+          { da: "Mange tak! Hvor er elevatoren?", ph: "mang-eh tahk! vor er el-eh-va-tor-en", en: "Thank you very much! Where is the elevator?", correct: true },
+          { da: "Kan jeg betale med kort?", ph: "kan yi beh-tay-luh meth kort", en: "Can I pay by card?", correct: false },
+          { da: "Vil du have en pose?", ph: "vil doo ha en po-suh", en: "Do you want a bag?", correct: false },
+        ]
+      },
+      {
+        them: { da: "Elevatoren er til venstre.", ph: "el-eh-va-tor-en er til ven-struh", en: "The elevator is to the left." },
+        choices: [
+          { da: "Perfekt, tak!", ph: "per-fekt, tahk", en: "Perfect, thank you!", correct: true },
+          { da: "Jeg er syg.", ph: "yi er seew", en: "I am sick.", correct: false },
+          { da: "Farvel!", ph: "far-vel", en: "Goodbye!", correct: false },
+        ]
+      },
+    ]
+  },
+  {
+    id: "lostdirections",
+    icon: "🗺️",
+    name: "Lost in the City",
+    sub: "Navigation • asking for help",
+    tip: "Point at your phone map and say 'Jeg er fortabt' (I'm lost) — Danes will nearly always stop to help.",
+    turns: [
+      {
+        them: { da: "Hej! Kan jeg hjælpe dig?", ph: "hi! kan yi yelp di", en: "Hi! Can I help you?" },
+        choices: [
+          { da: "Ja tak! Jeg er fortabt. Hvor er Nørreport Station?", ph: "ya tahk! yi er for-tabt. vor er Nur-uh-port sta-shon", en: "Yes please! I'm lost. Where is Nørreport Station?", correct: true },
+          { da: "Nej tak, jeg har et kort.", ph: "nay tahk, yi har et kort", en: "No thanks, I have a map.", correct: false },
+          { da: "Jeg vil gerne have mælk.", ph: "yi vil ger-nuh ha melk", en: "I would like milk.", correct: false },
+        ]
+      },
+      {
+        them: { da: "Nørreport? Gå ligeud og drej til venstre.", ph: "Nur-uh-port? go lee-yuh-ooth oh dry til ven-struh", en: "Nørreport? Go straight and turn left." },
+        choices: [
+          { da: "Kan du gentage det, langsomt?", ph: "kan doo gen-tay-uh deh, lang-somt", en: "Can you repeat that, slowly?", correct: true },
+          { da: "Tak, det forstår jeg.", ph: "tahk, deh for-stor yi", en: "Thanks, I understand that.", correct: true },
+          { da: "Vil du have en billet?", ph: "vil doo ha en bil-et", en: "Do you want a ticket?", correct: false },
+        ],
+        multiCorrect: true,
+        hint: "Either works! Ask again if you didn't catch it."
+      },
+      {
+        them: { da: "Det er cirka fem minutters gang.", ph: "deh er sir-ka fem min-oot-uhs gang", en: "It's about a five minute walk." },
+        choices: [
+          { da: "Tusind tak for hjælpen!", ph: "too-sin tahk for yelp-en", en: "A thousand thanks for the help!", correct: true },
+          { da: "Hej hej!", ph: "hi hi", en: "Bye bye!", correct: false },
+          { da: "Undskyld, jeg forstår ikke.", ph: "un-skyl, yi for-stor ig-uh", en: "Excuse me, I don't understand.", correct: false },
+        ]
+      },
+    ]
+  },
+  {
+    id: "pharmacy",
+    icon: "💊",
+    name: "At the Pharmacy",
+    sub: "Health • getting medicine",
+    tip: "Pharmacies (Apotek) have a green 'A' sign. Staff almost always speak English, but Danish phrases show respect.",
+    turns: [
+      {
+        them: { da: "Goddag! Hvad kan jeg hjælpe med?", ph: "goh-da! vad kan yi yelp meth", en: "Good day! What can I help with?" },
+        choices: [
+          { da: "Jeg har ondt i hovedet. Har I noget mod det?", ph: "yi har ont ee hoh-vuh-uh. har ee noh-uh moh deh", en: "I have a headache. Do you have something for that?", correct: true },
+          { da: "Jeg vil gerne have en billet.", ph: "yi vil ger-nuh ha en bil-et", en: "I would like a ticket.", correct: false },
+          { da: "Hvor er togstationen?", ph: "vor er toh-sta-shon-en", en: "Where is the train station?", correct: false },
+        ]
+      },
+      {
+        them: { da: "Ja, vi har Panodil. Er du allergisk over for noget?", ph: "ya, vi har Pan-oh-dil. er doo ah-ler-gisk oh-vuh for noh-uh", en: "Yes, we have Panodil (paracetamol). Are you allergic to anything?" },
+        choices: [
+          { da: "Nej, jeg er ikke allergisk.", ph: "nay, yi er ig-uh ah-ler-gisk", en: "No, I'm not allergic.", correct: true },
+          { da: "Ja, jeg er allergisk over for penicillin.", ph: "ya, yi er ah-ler-gisk oh-vuh for pen-ih-sil-in", en: "Yes, I'm allergic to penicillin.", correct: true },
+          { da: "Jeg forstår ikke.", ph: "yi for-stor ig-uh", en: "I don't understand.", correct: false },
+        ],
+        multiCorrect: true,
+        hint: "Answer truthfully for your own health!"
+      },
+      {
+        them: { da: "Det koster 45 kroner.", ph: "deh kos-uh 45 kro-nuh", en: "That costs 45 kroner." },
+        choices: [
+          { da: "Mange tak. Kan jeg betale med kort?", ph: "mang-eh tahk. kan yi beh-tay-luh meth kort", en: "Thank you. Can I pay by card?", correct: true },
+          { da: "Farvel og tak!", ph: "far-vel oh tahk", en: "Goodbye and thanks!", correct: false },
+          { da: "Hej hej!", ph: "hi hi", en: "Bye bye!", correct: false },
+        ]
+      },
+    ]
+  },
+];
+
+// ─── STATE ────────────────────────────────────────────────────────────────
+let sentIdx = 0;
+let sentDeck = [];
+let sentSlots = [];
+let sentAnswered = false;
+
+let rpScene = null;
+let rpTurnIdx = 0;
+let rpAnswered = false;
+let rpScore = 0;
+let rpTotal = 0;
+
+// ─── SENTENCE MODE ────────────────────────────────────────────────────────
+function buildSentDeck() {
+  sentDeck = shuffle(SENTENCES);
+  sentIdx = 0; sentAnswered = false; sentSlots = [];
+}
+
+function renderSentences(area) {
+  if (sentIdx >= sentDeck.length) { renderDone(area); return; }
+  const s = sentDeck[sentIdx];
+  // Build word bank: correct words + distractors, shuffled
+  const bank = shuffle([...s.da, ...s.extra]);
+  sentSlots = new Array(s.da.length).fill(null);
+  sentAnswered = false;
+
+  const pct = Math.round((sentIdx / sentDeck.length) * 100);
+  document.getElementById('prog-bar').style.width = pct + '%';
+  document.getElementById('score-badge').textContent = sentIdx + ' / ' + sentDeck.length;
+
+  area.innerHTML = `
+    <div class="tips-banner">
+      <i class="ti ti-bulb"></i>
+      <span><strong>${s.context}</strong> — tap words below to build the Danish sentence.</span>
+    </div>
+    <div class="sentence-card">
+      <div class="sentence-label">Translate into Danish</div>
+      <div class="sentence-en">${s.en}</div>
+      <div class="blank-row" id="blank-row">
+        ${s.da.map((_, i) => `<span class="blank-slot" id="slot-${i}" onclick="clearSlot(${i})"></span>`).join('')}
+      </div>
+      <div class="sentence-feedback" id="sent-feedback"></div>
+      <div class="word-bank" id="word-bank">
+        ${bank.map((w, i) => `<button class="word-chip" id="chip-${i}" onclick="pickWord(${i}, '${w.replace(/'/g,"\\'")}', ${bank.indexOf(w)})">${w}</button>`).join('')}
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn-next" style="flex:1" onclick="checkSentence()">Check ✓</button>
+        <button class="btn-next" style="flex:0 0 auto; padding:10px 14px;" onclick="sentIdx++; buildSentDeck(); sentIdx = Math.min(sentIdx, sentDeck.length); renderSentences(document.getElementById('main-area'))">Skip →</button>
+      </div>
+    </div>
+  `;
+
+  // Re-render with proper chip IDs
+  const bankEl = document.getElementById('word-bank');
+  bankEl.innerHTML = bank.map((w, i) => `<button class="word-chip" id="chip-${i}" onclick="pickWord(${i}, this)">${w}</button>`).join('');
+}
+
+function pickWord(chipIdx, btn) {
+  const firstEmpty = sentSlots.indexOf(null);
+  if (firstEmpty === -1) return;
+  sentSlots[firstEmpty] = { word: btn.textContent, chipIdx };
+  btn.classList.add('used');
+  const slot = document.getElementById('slot-' + firstEmpty);
+  slot.textContent = btn.textContent;
+  slot.classList.add('filled');
+}
+
+function clearSlot(slotIdx) {
+  if (!sentSlots[slotIdx]) return;
+  const { chipIdx } = sentSlots[slotIdx];
+  sentSlots[slotIdx] = null;
+  document.getElementById('chip-' + chipIdx).classList.remove('used');
+  const slot = document.getElementById('slot-' + slotIdx);
+  slot.textContent = '';
+  slot.classList.remove('filled', 'wrong-slot');
+}
+
+function checkSentence() {
+  if (sentAnswered) { sentIdx++; renderSentences(document.getElementById('main-area')); return; }
+  const s = sentDeck[sentIdx];
+  const answer = sentSlots.map(s => s ? s.word : '');
+  const correct = s.da;
+  let allRight = true;
+  answer.forEach((w, i) => {
+    const slot = document.getElementById('slot-' + i);
+    if (w.replace(/,/g,'').toLowerCase() !== correct[i].replace(/,/g,'').replace(/[?!.]/g,'').toLowerCase()) {
+      slot.classList.add('wrong-slot'); allRight = false;
+    }
+  });
+  const fb = document.getElementById('sent-feedback');
+  if (allRight) {
+    fb.className = 'sentence-feedback correct';
+    fb.innerHTML = `✓ Correct! <span class="phonetic-reveal">[${s.ph}]</span>`;
+    known++;
+  } else {
+    fb.className = 'sentence-feedback wrong';
+    fb.innerHTML = `Not quite. The answer: <strong style="font-family:\'DM Serif Display\',serif">${correct.join(' ')}</strong><br><span class="phonetic-reveal">[${s.ph}]</span>`;
+  }
+  total++;
+  sentAnswered = true;
+  document.querySelector('.btn-next').textContent = 'Next →';
+}
+
+// ─── ROLEPLAY MODE ────────────────────────────────────────────────────────
+function renderRoleplaySelect(area) {
+  document.getElementById('prog-bar').style.width = '0%';
+  document.getElementById('score-badge').textContent = '— / —';
+  area.innerHTML = `
+    <div class="tips-banner">
+      <i class="ti ti-theater"></i>
+      <span>Choose a real-life scenario to practice. You play yourself — pick the best Danish response!</span>
+    </div>
+    <div class="rp-select-grid">
+      ${SCENES.map(s => `
+        <button class="rp-scene-btn" onclick="startScene('${s.id}')">
+          <span class="scene-icon">${s.icon}</span>
+          <span class="scene-name">${s.name}</span>
+          <span class="scene-sub">${s.sub}</span>
+        </button>
+      `).join('')}
+    </div>
+  `;
+}
+
+function startScene(id) {
+  rpScene = SCENES.find(s => s.id === id);
+  rpTurnIdx = 0; rpAnswered = false; rpScore = 0; rpTotal = 0;
+  renderRoleplayTurn(document.getElementById('main-area'));
+}
+
+function renderRoleplayTurn(area) {
+  if (!rpScene) { renderRoleplaySelect(area); return; }
+  if (rpTurnIdx >= rpScene.turns.length) { renderRoleplayDone(area); return; }
+
+  const turn = rpScene.turns[rpTurnIdx];
+  const pct = Math.round((rpTurnIdx / rpScene.turns.length) * 100);
+  document.getElementById('prog-bar').style.width = pct + '%';
+  document.getElementById('score-badge').textContent = rpScore + ' / ' + rpTotal;
+
+  // Build chat history
+  let chatHtml = '';
+  for (let i = 0; i < rpTurnIdx; i++) {
+    const t = rpScene.turns[i];
+    chatHtml += `
+      <div>
+        <div class="rp-speaker">🇩🇰 Them</div>
+        <div class="rp-bubble them">
+          <div class="rp-danish">${t.them.da}</div>
+          <div class="rp-english">${t.them.en}</div>
+        </div>
+      </div>
+      <div>
+        <div class="rp-speaker" style="text-align:right">You 🧑</div>
+        <div class="rp-bubble you">${t._chosen || '...'}</div>
+      </div>`;
+  }
+
+  // Current them bubble
+  chatHtml += `
+    <div>
+      <div class="rp-speaker">🇩🇰 Them</div>
+      <div class="rp-bubble them">
+        <div class="rp-danish">${turn.them.da}</div>
+        <div class="rp-phonetic">[${turn.them.ph}]</div>
+        <div class="rp-english">${turn.them.en}</div>
+      </div>
+    </div>
+    <div>
+      <div class="rp-speaker" style="text-align:right">You 🧑</div>
+      <div class="rp-bubble you pending" id="your-bubble">Choose your response below...</div>
+    </div>`;
+
+  area.innerHTML = `
+    <div class="rp-scene">
+      <div class="rp-scene-title">${rpScene.icon} ${rpScene.name}</div>
+      <div class="rp-scene-desc">${rpScene.tip}</div>
+    </div>
+    <div class="rp-chat" id="rp-chat">${chatHtml}</div>
+    <div class="rp-choices" id="rp-choices">
+      ${turn.choices.map((c, i) => `
+        <button class="rp-choice" id="rpchoice-${i}" onclick="pickRpChoice(${i})">
+          <span class="rp-choice-da">${c.da}</span>
+          <span class="rp-choice-en">${c.en}</span>
+        </button>`).join('')}
+    </div>
+    ${turn.hint ? `<div class="tips-banner" id="rp-hint" style="display:none"><i class="ti ti-info-circle"></i><span>${turn.hint}</span></div>` : ''}
+    <div class="rp-nav">
+      <button class="btn-next" style="flex:1;margin:0" onclick="startScene(rpScene.id)">↺ Restart scene</button>
+      <div class="rp-scene-dots">
+        ${rpScene.turns.map((_, i) => `<div class="rp-dot ${i < rpTurnIdx ? 'done' : i === rpTurnIdx ? 'active' : ''}"></div>`).join('')}
+      </div>
+      <button class="mode-btn" onclick="renderRoleplaySelect(document.getElementById('main-area'))">All scenes</button>
+    </div>
+  `;
+
+  // Scroll chat to bottom
+  setTimeout(() => {
+    const chat = document.getElementById('rp-chat');
+    if (chat) chat.scrollTop = chat.scrollHeight;
+  }, 50);
+}
+
+function pickRpChoice(i) {
+  if (rpAnswered) return;
+  rpAnswered = true;
+  const turn = rpScene.turns[rpTurnIdx];
+  const choice = turn.choices[i];
+
+  // Show all results
+  turn.choices.forEach((c, j) => {
+    const el = document.getElementById('rpchoice-' + j);
+    el.classList.add('disabled');
+    if (c.correct) el.classList.add('correct');
+    else if (j === i && !c.correct) el.classList.add('wrong');
+  });
+
+  // Update your bubble
+  const bubble = document.getElementById('your-bubble');
+  bubble.classList.remove('pending');
+  bubble.innerHTML = `<strong>${choice.da}</strong><br><span style="font-size:12px;opacity:0.8">${choice.en}</span>`;
+
+  // Show hint if present
+  const hintEl = document.getElementById('rp-hint');
+  if (hintEl) hintEl.style.display = 'flex';
+
+  if (choice.correct) rpScore++;
+  rpTotal++;
+  turn._chosen = choice.da;
+
+  // Auto-advance after 1.6s
+  setTimeout(() => {
+    rpTurnIdx++;
+    rpAnswered = false;
+    renderRoleplayTurn(document.getElementById('main-area'));
+  }, 1600);
+}
+
+function renderRoleplayDone(area) {
+  const pct = rpTotal ? Math.round((rpScore / rpTotal) * 100) : 0;
+  let msg, emoji;
+  if (pct >= 85) { msg = 'Flawless! You\'re ready for Denmark.'; emoji = '🇩🇰'; }
+  else if (pct >= 60) { msg = 'Godt gået! Try it again to master it.'; emoji = '👍'; }
+  else { msg = 'Practice makes perfect — prøv igen!'; emoji = '💪'; }
+
+  document.getElementById('prog-bar').style.width = '100%';
+  document.getElementById('score-badge').textContent = rpScore + ' / ' + rpTotal;
+
+  area.innerHTML = `
+    <div class="done-screen">
+      <div class="done-emoji">${emoji}</div>
+      <div class="done-title">${msg}</div>
+      <div class="done-sub">
+        <strong>${rpScene.icon} ${rpScene.name}</strong> complete!<br>
+        You chose ${rpScore} of ${rpTotal} correct responses (${pct}%).<br><br>
+        <span style="font-size:12px;color:var(--text-tertiary)">Run it again until it feels automatic — that's real preparation.</span>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+        <button class="restart-btn" onclick="startScene(rpScene.id)">↺ Same scene</button>
+        <button class="restart-btn" style="background:var(--bg-secondary);color:var(--text);border-color:var(--border-secondary)" onclick="renderRoleplaySelect(document.getElementById('main-area'))">All scenes</button>
+      </div>
+    </div>
+  `;
+}
+
+function initTabs() {
+  const tabsEl = document.getElementById('category-tabs');
+  Object.entries(DATA).forEach(([key, cat]) => {
+    const btn = document.createElement('button');
+    btn.className = 'tab' + (key === currentCat ? ' active' : '');
+    btn.id = 'tab-' + key;
+    btn.textContent = cat.label;
+    btn.onclick = () => setCategory(key);
+    tabsEl.appendChild(btn);
+  });
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if (mode === 'flash') {
+    if (e.code === 'Space') { e.preventDefault(); flipCard(); }
+    if (e.code === 'ArrowRight') nextCard();
+    if (e.key === '1' && flipped) markCard(true);
+    if (e.key === '2' && flipped) markCard(false);
+  }
+  if (mode === 'quiz') {
+    if (e.code === 'ArrowRight' && mcAnswered) nextCard();
+  }
+});
+
+initTabs();
+buildDeck(currentCat);
+render();
+</script>
+</body>
+</html>
